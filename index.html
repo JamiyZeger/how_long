@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>时间进度可视化</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .progress-container {
+            width: 80%;
+            margin: 1rem 0;
+        }
+
+        .progress-label {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 15px;
+        }
+
+        #dayProgress {
+            background: linear-gradient(90deg, #2196F3, #64B5F6);
+        }
+        #weekProgress {
+            background: linear-gradient(90deg, #FF9800, #FFB74D);
+        }
+        #monthProgress {
+            background: linear-gradient(90deg, #9C27B0, #BA68C8);
+        }
+        #yearProgress {
+            background: linear-gradient(90deg, #F44336, #EF5350);
+        }
+
+        #dayProgress {
+            background: linear-gradient(90deg, #2196F3, #64B5F6);
+        }
+
+        #weekProgress {
+            background: linear-gradient(90deg, #FF9800, #FFB74D);
+        }
+
+        #monthProgress {
+            background: linear-gradient(90deg, #9C27B0, #BA68C8);
+        }
+
+        #yearProgress {
+            background: linear-gradient(90deg, #F44336, #EF5350);
+        }
+
+        .progress-text {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-label">当天进度 <span id="dayLabel"></span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="dayProgress"></div>
+            <div class="progress-text" id="dayText"></div>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-label">当周进度 <span id="weekLabel"></span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="weekProgress"></div>
+            <div class="progress-text" id="weekText"></div>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-label">当月进度 <span id="monthLabel"></span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="monthProgress"></div>
+            <div class="progress-text" id="monthText"></div>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-label">当年进度 <span id="yearLabel"></span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="yearProgress"></div>
+            <div class="progress-text" id="yearText"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateProgress() {
+            const now = new Date();
+            
+            // 当天进度
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+const dayPercent = ((hours * 3600 + minutes * 60 + seconds) / 86400 * 100).toFixed(10);
+            
+            // 当周进度（以周一为起点）
+            const dayOfWeek = (now.getDay() + 6) % 7; // 周日=6, 周一=0
+            const weekPercent = ((dayOfWeek * 86400 + hours * 3600 + minutes * 60 + seconds) / 604800 * 100).toFixed(10);
+            
+            // 当月进度
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const monthPercent = ((now.getDate() - 1 + (hours + minutes/60 + seconds/3600)/24) / daysInMonth * 100).toFixed(10);
+            
+            // 当年进度
+            const yearStart = new Date(now.getFullYear(), 0, 1);
+            const yearProgress = (now - yearStart) / (1000 * 60 * 60 * 24 * 365);
+            const yearPercent = (yearProgress * 100).toFixed(10);
+
+            // 更新DOM
+            document.getElementById('dayLabel').textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+            // ISO周数计算
+const calcISOWeek = (date) => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+};
+document.getElementById('weekLabel').textContent = `第${calcISOWeek(now)}周`;
+            document.getElementById('monthLabel').textContent = `${now.getMonth()+1}月`;
+            document.getElementById('yearLabel').textContent = `${now.getFullYear()}年`;
+            updateElement('day', dayPercent);
+            updateElement('week', weekPercent);
+            updateElement('month', monthPercent);
+            updateElement('year', yearPercent);
+        }
+
+        function updateElement(type, percent) {
+            document.getElementById(`${type}Progress`).style.width = `${percent}%`;
+            document.getElementById(`${type}Text`).textContent = `${percent}%`;
+        }
+
+        // 初始更新
+        updateProgress();
+        // 每分钟更新
+        setInterval(updateProgress, 1000);
+    </script>
+</body>
+</html>
