@@ -38,6 +38,9 @@
             border-radius: 15px;
         }
 
+        #workProgress {
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+        }
         #dayProgress {
             background: linear-gradient(90deg, #2196F3, #64B5F6);
         }
@@ -51,6 +54,9 @@
             background: linear-gradient(90deg, #F44336, #EF5350);
         }
 
+        #workProgress {
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+        }
         #dayProgress {
             background: linear-gradient(90deg, #2196F3, #64B5F6);
         }
@@ -79,6 +85,14 @@
     </style>
 </head>
 <body>
+    <div class="progress-container">
+        <div class="progress-label">工作时间进度 <span id="workLabel"></span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="workProgress"></div>
+            <div class="progress-text" id="workText"></div>
+        </div>
+    </div>
+
     <div class="progress-container">
         <div class="progress-label">当天进度 <span id="dayLabel"></span></div>
         <div class="progress-bar">
@@ -115,6 +129,28 @@
         function updateProgress() {
             const now = new Date();
             
+            // 工作时间计算（8:00-12:00 和 13:30-17:30）
+            const workStartAM = 8;
+            const workEndAM = 12;
+            const workStartPM = 13.5;
+            const workEndPM = 17.5;
+            
+            const currentHour = now.getHours() + now.getMinutes()/60;
+            let workPercent = 0;
+            
+            if (currentHour >= workStartAM && currentHour < workEndAM) {
+                // 上午工作时间
+                workPercent = ((currentHour - workStartAM) / (workEndAM - workStartAM)) * 50;
+            } else if (currentHour >= workStartPM && currentHour < workEndPM) {
+                // 下午工作时间
+                workPercent = 50 + ((currentHour - workStartPM) / (workEndPM - workStartPM)) * 50;
+            } else if (currentHour >= workEndPM) {
+                // 下班后
+                workPercent = 100;
+            }
+            
+            workPercent = Math.min(Math.max(workPercent, 0), 100).toFixed(10);
+            
             // 当天进度
             const hours = now.getHours();
             const minutes = now.getMinutes();
@@ -135,6 +171,7 @@ const dayPercent = ((hours * 3600 + minutes * 60 + seconds) / 86400 * 100).toFix
             const yearPercent = (yearProgress * 100).toFixed(10);
 
             // 更新DOM
+            document.getElementById('workLabel').textContent = `${now.getMonth()+1}月${now.getDate()}日`;
             document.getElementById('dayLabel').textContent = `${now.getMonth()+1}月${now.getDate()}日`;
             // ISO周数计算
 const calcISOWeek = (date) => {
@@ -146,6 +183,7 @@ const calcISOWeek = (date) => {
 document.getElementById('weekLabel').textContent = `第${calcISOWeek(now)}周`;
             document.getElementById('monthLabel').textContent = `${now.getMonth()+1}月`;
             document.getElementById('yearLabel').textContent = `${now.getFullYear()}年`;
+            updateElement('work', workPercent);
             updateElement('day', dayPercent);
             updateElement('week', weekPercent);
             updateElement('month', monthPercent);
